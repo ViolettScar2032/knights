@@ -56,54 +56,62 @@ knowledge2 = And(
 )
 
 # Puzzle 3
-# A says either "I am a knight." or "I am a knave.", but you don't know which.
-# B says "A said 'I am a knave'."
-# B says "C is a knave."
-# C says "A is a knight."
 knowledge3 = And(
-    # Each character is either a knight or a knave
-    Or(AKnight, AKnave),
-    Not(And(AKnight, AKnave)),
-    Or(BKnight, BKnave),
-    Not(And(BKnight, BKnave)),
-    Or(CKnight, CKnave),
-    Not(And(CKnight, CKnave)),
+    # Each character is either a knight or knave
+    Or(AKnight, AKnave), Not(And(AKnight, AKnave)),
+    Or(BKnight, BKnave), Not(And(BKnight, BKnave)),
+    Or(CKnight, CKnave), Not(And(CKnight, CKnave)),
 
-    # A’s possible statements (we don’t know which)
+    # A's ambiguous statement
     Or(AKnight, AKnave),
 
-    # B says “A said ‘I am a knave.’” — so if B is a knight, that’s true.
-    # If B is a knave, that’s false. So we encode that relationship.
+    # B says "A said 'I am a knave'"
     Implication(BKnight, AKnave),
     Implication(BKnave, Not(AKnave)),
 
-    # B says “C is a knave.”
+    # B says "C is a knave"
     Implication(BKnight, CKnave),
     Implication(BKnave, Not(CKnave)),
 
-    # C says “A is a knight.”
+    # C says "A is a knight"
     Implication(CKnight, AKnight),
     Implication(CKnave, Not(AKnight))
 )
 
 
+# def main():
+#     symbols = [AKnight, AKnave, BKnight, BKnave, CKnight, CKnave]
+#     puzzles = [
+#         ("Puzzle 0", knowledge0),
+#         ("Puzzle 1", knowledge1),
+#         ("Puzzle 2", knowledge2),
+#         ("Puzzle 3", knowledge3)
+#     ]
+#     for puzzle, knowledge in puzzles:
+#         print(puzzle)
+#         if len(knowledge.conjuncts) == 0:
+#             print("    Not yet implemented.")
+#         else:
+#             for symbol in symbols:
+#                 if model_check(knowledge, symbol):
+#                     print(f"    {symbol}")
 
 def main():
-    symbols = [AKnight, AKnave, BKnight, BKnave, CKnight, CKnave]
     puzzles = [
-        ("Puzzle 0", knowledge0),
-        ("Puzzle 1", knowledge1),
-        ("Puzzle 2", knowledge2),
-        ("Puzzle 3", knowledge3)
+        ("Puzzle 0", [("A", AKnight, AKnave)], knowledge0),
+        ("Puzzle 1", [("A", AKnight, AKnave), ("B", BKnight, BKnave)], knowledge1),
+        ("Puzzle 2", [("A", AKnight, AKnave), ("B", BKnight, BKnave)], knowledge2),
+        ("Puzzle 3", [("A", AKnight, AKnave), ("B", BKnight, BKnave), ("C", CKnight, CKnave)], knowledge3)
     ]
-    for puzzle, knowledge in puzzles:
-        print(puzzle)
-        if len(knowledge.conjuncts) == 0:
-            print("    Not yet implemented.")
-        else:
-            for symbol in symbols:
-                if model_check(knowledge, symbol):
-                    print(f"    {symbol}")
+
+    for puzzle_name, characters, knowledge in puzzles:
+        print(puzzle_name)
+        for name, knight, knave in characters:
+            if model_check(knowledge, knight):
+                print(f"    {name} is a Knight")
+            elif model_check(knowledge, knave):
+                print(f"    {name} is a Knave")
+
 
 
 if __name__ == "__main__":
